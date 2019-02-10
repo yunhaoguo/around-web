@@ -29,6 +29,7 @@ class RegistrationForm extends React.Component {
                 }).then((data) => {
                     console.log(data);
                     message.success('Registration succeed!');
+                    this.props.history.push('/login');
                 }).catch((e) => {
                     console.log(e);
                     message.error('Registration failed!');
