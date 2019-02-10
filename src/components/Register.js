@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { API_ROOT} from "../constants";
+import { Link } from 'react-router-dom';
 
 class RegistrationForm extends React.Component {
     state = {
@@ -126,7 +127,8 @@ class RegistrationForm extends React.Component {
                 </Form.Item>
 
                 <Form.Item {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="submit">Register</Button>
+                    <Button type="primary" htmlType="submit" className="register-form-button">Register</Button>
+                    I already have an account, go back to <Link to="/login">login</Link>
                 </Form.Item>
             </Form>
         );
