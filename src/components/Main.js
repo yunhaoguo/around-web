@@ -6,15 +6,20 @@ import { Switch, Route } from 'react-router-dom'
 
 
 export class Main extends React.Component {
+
+    getLogin = () => {
+        return this.props.isLoggedIn ? <Home/> : <Login handleSuccessLogin={this.props.handleSuccessLogin}/>;
+    }
+
     render() {
         return (
             <div className="main">
                 <Switch>
-                    <Route exact path="/" component={Login}/>
-                    <Route path="/login" component={Login}/>
+                    <Route exact path="/" render={this.getLogin}/>
+                    <Route path="/login" render={this.getLogin}/>
                     <Route path="/register" component={Register}/>
-                    <Route path="/home" component={Home}/>
-                    <Route component={Login}/>
+                    <Route path="/home" render={this.getLogin}/>
+                    <Route render={this.getLogin}/>
                 </Switch>
             </div>
         );
