@@ -1,7 +1,8 @@
 .logout {
     float: right;
     font-size: 15px;
-    padding-top: 10px;
+    padding-top: 12px;
     padding-bottom: 10px;
     padding-right: 10px;
+    border-color: aliceblue;
 }
