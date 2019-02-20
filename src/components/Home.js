@@ -1,8 +1,9 @@
 import React from 'react';
-import { Tabs, Button, Spin } from 'antd';
+import { Tabs, Button, Spin, Row, Col } from 'antd';
 import { GEO_OPTIONS, POS_KEY, API_ROOT, TOKEN_KEY, AUTH_HEADER } from "../constants";
 import { Gallery } from "./Gallery";
 import { CreatePostButton } from "./CreatePostButton";
+import { AroundMap } from './AroundMap';
 
 const TabPane = Tabs.TabPane;
 
@@ -12,7 +13,8 @@ export class Home extends React.Component {
         isLoadingGeoLocation: false,
         error: '',
         isLoadingPosts: false,
-        posts: []
+        posts: [],
+        topic: 'around',
     }
 
 
@@ -77,7 +79,7 @@ export class Home extends React.Component {
 
     }
 
-    getImagePosts = () => {
+    getPanelContent = (type) => {
         const {error, isLoadingGeoLocation, isLoadingPosts, posts} = this.state;
         if (error) {
             return <div>{error}</div>;
@@ -86,32 +88,93 @@ export class Home extends React.Component {
         } else if (isLoadingPosts) {
             return <Spin tip='Loading posts...'/>;
         } else if (posts && posts.length > 0) {
-            const images = this.state.posts.map((post) => {
-                return {
-                    user: post.user,
-                    src: post.url,
-                    thumbnail: post.url,
-                    caption: post.message,
-                    thumbnailWidth: 400,
-                    thumbnailHeight: 300,
-                }
-            });
-
-            return (<Gallery images={images}/>);
+            return type === "image" ? this.getImagePosts() : this.getVideoPosts();
         } else {
             return <div>No nearby posts.</div>
         }
     }
+
+    getImagePosts = () => {
+        const images = this.state.posts
+            .filter(({type}) => type === 'image')
+            .map((post) => {
+            return {
+                user: post.user,
+                src: post.url,
+                thumbnail: post.url,
+                caption: post.message,
+                thumbnailWidth: 400,
+                thumbnailHeight: 300,
+            }
+        });
+
+        return (<Gallery images={images}/>);
+    }
+    getVideoPosts = () => {
+
+        return (
+            <Row>
+                {
+                    this.state.posts
+                        .filter(({type}) => type === "video")
+                        .map((post) => (
+                            <Col span={6}>
+                                <video src={post.url} controls className='video-block'/>
+                                <p>{`${post.user}: ${post.message}`}</p>
+                            </Col>
+                        ))
+                }
+            </Row>
+        );
+    }
+
+    loadFacesAroundTheWorld = () => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        this.setState({ isLoadingPosts: true, error: '' });
+        fetch(`${API_ROOT}/cluster?term=face`, {
+            method: 'GET',
+            headers: {
+                Authorization: `${AUTH_HEADER} ${token}`,
+            },
+        }).then((response) => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error(response.statusText);
+        })
+            .then((data) => {
+                console.log(data);
+                this.setState({ isLoadingPosts: false, posts: data ? data : [] });
+            })
+            .catch((e) => {
+                console.log(e);
+                this.setState({ isLoadingPosts: false, error: 'Loading face images failed.'});
+            });
+    }
+
 
     render() {
         const operations = <CreatePostButton loadNearbyPosts={this.loadNearbyPosts}/>;
         return (
             <Tabs className="main-tabs" tabBarExtraContent={operations}>
                 <TabPane tab="Image Posts" key="1">
-                    {this.getImagePosts()}
+                    {this.getPanelContent("image")}
                 </TabPane>
-                <TabPane tab="Video Posts" key="2">Content of tab 2</TabPane>
-                <TabPane tab="Map" key="3">Content of tab 3</TabPane>
+                <TabPane tab="Video Posts" key="2">
+                    {this.getPanelContent("video")}
+                </TabPane>
+                <TabPane tab="Map" key="3">
+                    <AroundMap
+                        googleMapURL="https://maps.googleapis.com/maps/api/js?key=AIzaSyD3CEh9DXuyjozqptVB5LA-dN7MxWWkr9s&v=3.exp&libraries=geometry,drawing,places"
+                        loadingElement={<div style={{ height: `100%` }} />}
+                        containerElement={<div style={{ height: `800px` }} />}
+                        mapElement={<div style={{ height: `100%` }} />}
+                        posts={this.state.posts}
+                        loadNearbyPosts={this.loadNearbyPosts}
+                        loadFacesAroundTheWorld={this.loadFacesAroundTheWorld}
+                        topic={this.state.topic}
+                    />
+                </TabPane>
             </Tabs>
         );
     }

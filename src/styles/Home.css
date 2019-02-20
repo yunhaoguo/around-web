@@ -2,3 +2,12 @@
     margin-left: 150px;
     margin-right: 150px;
 }
+
+.video-block {
+    width: 100%;
+    height: 400px;
+}
+
+.topic-radio-group {
+    margin-bottom: 20px;
+}
